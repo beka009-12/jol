@@ -1,0 +1,352 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #15181e;
+  --card: #ffffff;
+  --card-foreground: #15181e;
+  --popover: #ffffff;
+  --popover-foreground: #15181e;
+
+  /*
+    Flag red: the logo, the one main action and "you are here" in navigation.
+    Never a status, never a selection: a picked chip or date is ink.
+  */
+  --primary: #c8261b;
+  --primary-hover: #a81f16;
+  --primary-pressed: #8f1a12;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f0f1f3;
+  --secondary-foreground: #15181e;
+  --muted: #f0f1f3;
+  --muted-foreground: #5b616d;
+  --accent: #e4e6ea;
+  --accent-foreground: #15181e;
+
+  /*
+    Errors sit in the red family people expect, but never look like the
+    accent: always text with an icon or an outline, never a filled red block.
+  */
+  --danger: #a8170e;
+  --danger-soft: #fdecea;
+  --destructive: var(--danger);
+
+  --border: #e2e4e8;
+  --input: #858b96;
+  --ring: #15181e;
+
+  --surface: #f6f7f8;
+
+  /* Spruce: the dark bands. */
+  --deep: #0f2a26;
+  --deep-raised: #183b36;
+  --on-deep: #ffffff;
+  --on-deep-muted: #b7c7c2;
+
+  /* The flag's sun: ratings, and the selected thing on a dark band. */
+  --sun: #f5b81f;
+  --verified: #0b7a6e;
+
+  /* One colour per road on the scheme. */
+  --route-lake: #35bfc9;
+  --route-center: #f5b81f;
+  --route-south: #ef4a3c;
+
+  /* The crowd chart: one hue, the month being read is darker. */
+  --chart-bar: #4f9e8f;
+  --chart-bar-active: #0f2a26;
+  --chart-off: #858b96;
+
+  --open: #14632f;
+  --open-soft: #dcf3e3;
+  --soon: #8a3c06;
+  --soon-soft: #fdeecb;
+  --closed: #4b5260;
+  --closed-soft: #eceef1;
+
+  /* The smallest thing a thumb can hit; offsets around buttons derive from it. */
+  --tap: 2.75rem;
+  --nav-height: 60px;
+  --header-height: 4.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-pressed: var(--primary-pressed);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-surface: var(--surface);
+  --color-deep: var(--deep);
+  --color-deep-raised: var(--deep-raised);
+  --color-on-deep: var(--on-deep);
+  --color-on-deep-muted: var(--on-deep-muted);
+  --color-sun: var(--sun);
+  --color-verified: var(--verified);
+  --color-route-lake: var(--route-lake);
+  --color-route-center: var(--route-center);
+  --color-route-south: var(--route-south);
+  --color-chart-off: var(--chart-off);
+  --color-open: var(--open);
+  --color-open-soft: var(--open-soft);
+  --color-soon: var(--soon);
+  --color-soon-soft: var(--soon-soft);
+  --color-closed: var(--closed);
+  --color-closed-soft: var(--closed-soft);
+  --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sofia), "Arial Narrow", ui-sans-serif, sans-serif;
+}
+
+/*
+  UI text is 13 / 15 / 16 / 20 / 24 / 32, so nothing smaller can be written by
+  accident. Mapped onto Tailwind's names to keep shadcn working: text-xs 13,
+  text-sm 15, text-base 16, text-lg 20, text-xl 24, text-2xl 32.
+
+  Headlines use the condensed face and scale with the screen: text-display-sm,
+  -md, -lg, -xl. Russian words run long, and a condensed cut lets them stay large
+  on a phone. Their line height is 1.1: tighter and the dots of ё and the breve
+  of й touch the line above.
+
+  Spacing (padding, margin, gap) only from 4 / 8 / 12 / 16 / 24 / 32 / 48:
+  Tailwind steps 1 2 3 4 6 8 12. Tight inside a block, loose between blocks.
+  Sizes (h-, w-, size-) are free; tap targets are at least h-11 (44px).
+  lib/design-scale.test.ts fails on anything else.
+
+  Radii: rounded-xl 12 (controls), rounded-2xl 16 (cards and photos),
+  rounded-full only for small status badges.
+
+  Motion: 150ms for feedback (hover, press), 200–250ms for things that enter
+  or leave, always ease-out. Reduced motion turns it all off below.
+*/
+@theme {
+  --text-*: initial;
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.25rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.375rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.625rem;
+  --text-xl: 1.5rem;
+  --text-xl--line-height: 1.875rem;
+  --text-2xl: 2rem;
+  --text-2xl--line-height: 2.375rem;
+  --text-display-sm: clamp(1.75rem, 1.55rem + 0.8vw, 2.25rem);
+  --text-display-sm--line-height: 1.1;
+  --text-display-md: clamp(2.25rem, 1.95rem + 1.3vw, 3.25rem);
+  --text-display-md--line-height: 1.1;
+  --text-display-lg: clamp(2.75rem, 2.25rem + 2.2vw, 4.5rem);
+  --text-display-lg--line-height: 1.1;
+  --text-display-xl: clamp(3.5rem, 2.35rem + 5.1vw, 7.25rem);
+  --text-display-xl--line-height: 1.1;
+
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+
+  /* Only for what floats above the page: sheets, the search card, popovers. */
+  --shadow-floating: 0 1px 2px rgb(21 24 30 / 0.08), 0 12px 32px -8px rgb(21 24 30 / 0.22);
+
+  --default-transition-duration: 150ms;
+  --default-transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: calc(var(--header-height) + 1rem);
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.5rem;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* The one piece of motion nobody asked for: the roads draw in as the scheme scrolls up. */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .route-scheme {
+        view-timeline-name: --route-scheme;
+      }
+
+      .route-draw {
+        stroke-dasharray: 1;
+        animation: route-draw linear both;
+        animation-timeline: --route-scheme;
+        animation-range: entry 10% entry 75%;
+      }
+    }
+  }
+}
+
+/*
+  Crowd chart: the checked month is the one being read. Pointing at another
+  column reads that one instead until the pointer leaves.
+*/
+@layer components {
+  .crowd-mark {
+    --mark: var(--chart-bar);
+    background: var(--mark);
+    transition: background-color 150ms;
+    /* The bars are the data: keep them in high-contrast mode and on paper. */
+    forced-color-adjust: none;
+    print-color-adjust: exact;
+  }
+
+  .crowd-mark[data-off] {
+    --mark: var(--chart-off);
+  }
+
+  .crowd-readout {
+    visibility: hidden;
+  }
+
+  .crowd-bar:has(:checked) .crowd-readout {
+    visibility: visible;
+  }
+
+  .crowd-bar:has(:checked) .crowd-mark {
+    background: var(--chart-bar-active);
+  }
+
+  @media (hover: hover) {
+    .crowd-chart:has(.crowd-bar:hover) .crowd-readout {
+      visibility: hidden;
+    }
+
+    .crowd-chart .crowd-bar:hover .crowd-readout {
+      visibility: visible;
+    }
+
+    .crowd-chart:has(.crowd-bar:hover) .crowd-bar:has(:checked):not(:hover) .crowd-mark {
+      background: var(--mark);
+    }
+
+    .crowd-chart .crowd-bar:hover .crowd-mark {
+      background: var(--chart-bar-active);
+    }
+  }
+}
+
+@utility page-width {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1328px;
+  padding-inline: 1rem;
+
+  @media (min-width: 64rem) {
+    padding-inline: 1.5rem;
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Keeps content clear of the fixed bottom nav on phones. */
+@utility pb-nav {
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 1.5rem);
+
+  @media (min-width: 64rem) {
+    padding-bottom: 4rem;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+@keyframes route-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
