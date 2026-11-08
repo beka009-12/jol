@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "cn";
 import { summarizeCrowd } from "@/lib/crowd";
@@ -132,8 +133,12 @@ export function CrowdChart({ visitors, openMonths, className }: CrowdChartProps)
         </p>
       )}
 
-      <details className="mt-1">
-        <summary className="cursor-pointer py-3 text-sm font-medium">
+      <details className="group mt-1">
+        <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium [&::-webkit-details-marker]:hidden">
+          <ChevronDown
+            className="size-4 transition-transform duration-150 ease-out group-open:rotate-180"
+            aria-hidden
+          />
           {t("tableToggle")}
         </summary>
         <table className="w-full text-sm">

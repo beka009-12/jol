@@ -66,19 +66,29 @@ export function CatalogTabs({ active }: CatalogTabsProps) {
 interface CatalogPageProps {
   active: CatalogSection;
   title: string;
+  /** One sentence on what every item here tells you. */
+  lede?: string;
   children: React.ReactNode;
 }
 
-export function CatalogPage({ active, title, children }: CatalogPageProps) {
+export function CatalogPage({ active, title, lede, children }: CatalogPageProps) {
   return (
     <>
       <CatalogTabs active={active} />
       <div className="page-width pt-6 pb-nav lg:pt-12">
-        <h1 className="mb-6 font-display text-display-md font-extrabold lg:mb-8">
-          {title}
-        </h1>
+        <header className="mb-6 lg:mb-8">
+          <h1 className="font-display text-display-md font-extrabold">{title}</h1>
+          {lede && (
+            <p className="mt-2 max-w-[60ch] text-pretty text-muted-foreground">{lede}</p>
+          )}
+        </header>
         {children}
       </div>
     </>
   );
+}
+
+/* The filters as one block, set off from the results by a rule. */
+export function CatalogFilters({ children }: { children: React.ReactNode }) {
+  return <div className="space-y-4 border-b pb-6 lg:space-y-3">{children}</div>;
 }

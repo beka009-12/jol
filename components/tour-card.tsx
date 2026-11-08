@@ -14,9 +14,16 @@ interface TourCardProps {
   headingLevel?: "h2" | "h3";
   /** For the first card on a list page, where it is the largest paint. */
   preload?: boolean;
+  compactOnPhone?: boolean;
 }
 
-export function TourCard({ tour, sizes, headingLevel, preload }: TourCardProps) {
+export function TourCard({
+  tour,
+  sizes,
+  headingLevel,
+  preload,
+  compactOnPhone,
+}: TourCardProps) {
   const t = useTranslations("Tours");
 
   return (
@@ -26,18 +33,11 @@ export function TourCard({ tour, sizes, headingLevel, preload }: TourCardProps) 
       sizes={sizes}
       preload={preload}
       headingLevel={headingLevel}
+      compactOnPhone={compactOnPhone}
       title={tour.title}
       meta={`${tour.place.name}, ${t("days", { count: tour.duration_days })}`}
       price={<Price amount={tour.price_from} />}
-      badge={
-        tour.availability === "open" ? undefined : (
-          <AvailabilityBadge
-            availability={tour.availability}
-            opensOn={tour.opens_on}
-            onPhoto
-          />
-        )
-      }
+      status={{ availability: tour.availability, opensOn: tour.opens_on }}
     />
   );
 }

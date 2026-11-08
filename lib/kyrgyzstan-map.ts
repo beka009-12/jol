@@ -93,3 +93,18 @@ export const ROUTE_COLOR: Record<RouteId, string> = {
   center: "var(--route-center)",
   south: "var(--route-south)",
 };
+
+const BISHKEK = { latitude: 42.87, longitude: 74.59 };
+
+/** Straight-line distance, close enough to decide whether two dots would touch. */
+export function distanceKm(
+  a: { latitude: number; longitude: number },
+  b: { latitude: number; longitude: number },
+): number {
+  const meanLat = (((a.latitude + b.latitude) / 2) * Math.PI) / 180;
+  const dx = (a.longitude - b.longitude) * Math.cos(meanLat);
+  const dy = a.latitude - b.latitude;
+  return Math.hypot(dx, dy) * KM_PER_DEGREE;
+}
+
+export { BISHKEK };

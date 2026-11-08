@@ -3,11 +3,11 @@ import { Suspense } from "react";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { CompanyCard } from "@/components/business-cards";
-import { CatalogPage } from "@/components/catalog-tabs";
+import { CompanyList } from "@/components/business-cards";
+import { CatalogFilters, CatalogPage } from "@/components/catalog-tabs";
 import { ChipRow } from "@/components/chip";
 import { EmptyState } from "@/components/empty-state";
-import { TourGridSkeleton } from "@/components/skeletons";
+import { CompanyListSkeleton } from "@/components/skeletons";
 import { routing } from "@/i18n/routing";
 import { getRegions } from "@/lib/api/catalog-index";
 import { getCompanies } from "@/lib/api/server";
@@ -60,13 +60,7 @@ async function CompanyResults({ locale, kind, region }: ResultsProps) {
       <p role="status" className="mb-4 text-sm text-muted-foreground">
         {t("count", { count: total })}
       </p>
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((company) => (
-          <li key={company.slug}>
-            <CompanyCard company={company} headingLevel="h2" />
-          </li>
-        ))}
-      </ul>
+      <CompanyList companies={items} headingLevel="h2" />
     </>
   );
 }
@@ -88,9 +82,10 @@ export default async function CompaniesPage({
   const region = parseSlug(raw.region);
 
   return (
-    <CatalogPage active="companies" title={t("title")}>
-      <div className="space-y-2">
+    <CatalogPage active="companies" title={t("title")} lede={t("lede")}>
+      <CatalogFilters>
         <ChipRow
+          showLabel
           label={t("kindLabel")}
           items={[
             {
@@ -108,6 +103,7 @@ export default async function CompaniesPage({
           ]}
         />
         <ChipRow
+          showLabel
           label={t("regionLabel")}
           items={[
             {
@@ -124,11 +120,11 @@ export default async function CompaniesPage({
             })),
           ]}
         />
-      </div>
+      </CatalogFilters>
       <div className="mt-6">
         <Suspense
           key={`${kind ?? ""}-${region ?? ""}`}
-          fallback={<TourGridSkeleton />}
+          fallback={<CompanyListSkeleton />}
         >
           <CompanyResults locale={locale} kind={kind} region={region} />
         </Suspense>

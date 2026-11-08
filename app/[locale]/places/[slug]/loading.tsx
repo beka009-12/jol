@@ -1,5 +1,5 @@
-import { DetailSkeleton } from "@/components/skeletons";
+import { PlaceDetailSkeleton } from "@/components/skeletons";
 
 export default function PlaceLoading() {
-  return <DetailSkeleton />;
+  return <PlaceDetailSkeleton />;
 }

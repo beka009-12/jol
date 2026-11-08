@@ -24,10 +24,7 @@ export function DetailGallery({ photos, backHref }: DetailGalleryProps) {
           sizes={second ? "(min-width: 1024px) 860px, 100vw" : "(min-width: 1248px) 1280px, 100vw"}
           aspect="header"
           preload
-          className={cn(
-            "lg:rounded-2xl",
-            second ? "lg:aspect-auto lg:h-[26rem]" : "lg:aspect-[21/9]",
-          )}
+          className="lg:aspect-auto lg:h-[26rem] lg:rounded-2xl"
         />
         {second && (
           <Photo

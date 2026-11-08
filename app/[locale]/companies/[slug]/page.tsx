@@ -138,7 +138,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
             <FactGrid facts={facts} />
           </DetailCard>
 
-          <Suspense fallback={<TourGridSkeleton />}>
+          <Suspense fallback={<TourGridSkeleton compactOnPhone={false} />}>
             <CompanyTours locale={locale} slug={company.slug} />
           </Suspense>
         </div>

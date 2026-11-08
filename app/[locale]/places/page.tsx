@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { CatalogPage } from "@/components/catalog-tabs";
+import { CatalogFilters, CatalogPage } from "@/components/catalog-tabs";
 import { ChipRow } from "@/components/chip";
 import { EmptyState } from "@/components/empty-state";
 import { PlaceCard } from "@/components/place-card";
@@ -40,6 +40,7 @@ async function RegionFilter({ locale, active }: RegionFilterProps) {
 
   return (
     <ChipRow
+      showLabel
       label={t("regionLabel")}
       items={[
         {
@@ -74,7 +75,7 @@ async function PlaceResults({ locale, active }: RegionFilterProps) {
   }
 
   return (
-    <ul className="grid grid-cols-2 gap-x-3 gap-y-6 lg:grid-cols-4 lg:gap-6">
+    <ul className="grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4 lg:gap-x-6">
       {items.map((place, index) => (
         <li key={place.slug}>
           <PlaceCard place={place} headingLevel="h2" preload={index < 2} />
@@ -95,8 +96,10 @@ export default async function PlacesPage({
   const { region } = await searchParams;
 
   return (
-    <CatalogPage active="places" title={t("title")}>
-      <RegionFilter locale={locale} active={region} />
+    <CatalogPage active="places" title={t("title")} lede={t("lede")}>
+      <CatalogFilters>
+        <RegionFilter locale={locale} active={region} />
+      </CatalogFilters>
       <div className="mt-6">
         <Suspense key={region ?? ""} fallback={<PlaceGridSkeleton count={8} />}>
           <PlaceResults locale={locale} active={region} />

@@ -4,7 +4,7 @@ import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import {
-  CompanyCard,
+  CompanyList,
   HotelCard,
   RestaurantCard,
 } from "@/components/business-cards";
@@ -73,7 +73,8 @@ function searchHref(filters: Filters, type?: Group): ComponentProps<typeof Link>
   };
 }
 
-const GRID = "grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+const GRID =
+  "grid gap-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4";
 
 function GroupItems({
   group,
@@ -90,7 +91,7 @@ function GroupItems({
         <ul className={GRID}>
           {results.tours.items.slice(0, limit).map((tour) => (
             <li key={tour.slug}>
-              <TourCard tour={tour} />
+              <TourCard tour={tour} compactOnPhone />
             </li>
           ))}
         </ul>
@@ -100,7 +101,7 @@ function GroupItems({
         <ul className={GRID}>
           {results.hotels.items.slice(0, limit).map((hotel) => (
             <li key={hotel.slug}>
-              <HotelCard hotel={hotel} />
+              <HotelCard hotel={hotel} compactOnPhone />
             </li>
           ))}
         </ul>
@@ -110,20 +111,14 @@ function GroupItems({
         <ul className={GRID}>
           {results.restaurants.items.slice(0, limit).map((restaurant) => (
             <li key={restaurant.slug}>
-              <RestaurantCard restaurant={restaurant} />
+              <RestaurantCard restaurant={restaurant} compactOnPhone />
             </li>
           ))}
         </ul>
       );
     case "companies":
       return (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {results.companies.items.slice(0, limit).map((company) => (
-            <li key={company.slug}>
-              <CompanyCard company={company} />
-            </li>
-          ))}
-        </ul>
+        <CompanyList companies={results.companies.items.slice(0, limit)} />
       );
     case "places":
       return (
