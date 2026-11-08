@@ -12,6 +12,7 @@ import {
   LogIn,
   LogOut,
   type LucideIcon,
+  MessageCircle,
   SquareParking,
   Soup,
   Users,
@@ -24,18 +25,19 @@ import { notFound } from "next/navigation";
 import { AvailabilityBadge } from "@/components/availability-badge";
 import { CrowdChart } from "@/components/crowd-chart";
 import {
+  AddressLine,
   ContactActions,
-  DetailAside,
+  ContactCard,
   DetailCard,
   DetailGallery,
   DetailSection,
+  DetailTitle,
+  mapSearchHref,
 } from "@/components/detail-parts";
 import { type Fact, FactGrid } from "@/components/fact-grid";
 import { NearbyListings } from "@/components/nearby-listings";
 import { PriceLine } from "@/components/price";
-import { RatingMark, VerifiedMark } from "@/components/rating";
 import { StickyCta } from "@/components/sticky-cta";
-import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { getHotel } from "@/lib/api/server";
 import { formatSeason, formatSom } from "@/lib/format";
@@ -88,9 +90,10 @@ export default async function HotelPage({ params }: HotelPageProps) {
   const tAmenities = await getTranslations("Amenities");
   const tHours = await getTranslations("Hours");
 
-  const whatsappHref = `https://wa.me/${hotel.whatsapp}?text=${encodeURIComponent(
-    t("whatsappMessage", { name: hotel.name }),
-  )}`;
+  const whatsappTo = (text: string) =>
+    `https://wa.me/${hotel.whatsapp}?text=${encodeURIComponent(text)}`;
+  const whatsappHref = whatsappTo(t("whatsappMessage", { name: hotel.name }));
+  const mapHref = mapSearchHref(hotel.name, hotel.address);
 
   // A guesthouse or a camp has hosts rather than a front desk.
   const hasHosts = hotel.type === "guesthouse" || hotel.type === "yurt_camp";
@@ -140,31 +143,55 @@ export default async function HotelPage({ params }: HotelPageProps) {
 
       <div className="page-width mt-6 pb-12 lg:mt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-12 lg:pb-12">
         <div className="min-w-0">
-          <p className="text-sm text-muted-foreground">{tTypes(hotel.type)}</p>
-          <h1 className="mt-1 font-display text-display-md font-extrabold text-balance">
-            {hotel.name}
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            <Link
-              href={`/places/${hotel.place.slug}`}
-              className="underline underline-offset-4 transition-colors duration-150 hover:text-foreground"
-            >
-              {hotel.place.name}
-            </Link>
-            {`, ${hotel.region.name}`}
-          </p>
-          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-            {hotel.rating && <RatingMark rating={hotel.rating} showCount />}
-            {hotel.verified && <VerifiedMark withLabel />}
-          </p>
+          <DetailTitle
+            kind={tTypes(hotel.type)}
+            title={hotel.name}
+            place={hotel.place}
+            region={hotel.region}
+            rating={hotel.rating}
+            verified={hotel.verified}
+          />
 
           <div className="mt-4 lg:hidden">{summary}</div>
 
-          <DetailSection id="about" title={t("aboutTitle")}>
+          <DetailSection id="about" title={t("aboutTitle")} className="mt-12">
             <p className="max-w-[65ch] text-pretty">{hotel.description}</p>
           </DetailSection>
 
-          <DetailSection id="amenities" title={t("amenitiesTitle")}>
+          {/* Each room asks the hosts about itself, so the message already says which one. */}
+          <DetailSection id="rooms" title={t("roomsTitle")} className="mt-12">
+            <ul className="divide-y overflow-hidden rounded-2xl border">
+              {hotel.rooms.map((room) => (
+                <li key={room.name}>
+                  <a
+                    href={whatsappTo(t("roomMessage", { name: hotel.name, room: room.name }))}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-4 p-4 transition-colors duration-150 hover:bg-surface focus-visible:-outline-offset-2"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-medium">{room.name}</span>
+                      <span className="block text-sm text-muted-foreground">
+                        {t("guests", { count: room.guests })}
+                      </span>
+                    </span>
+                    <PriceLine
+                      main={t("roomPrice", { som: formatSom(room.price, locale) })}
+                      note={tHotels("perNight")}
+                      className="shrink-0 text-right"
+                    />
+                    <MessageCircle
+                      className="size-5 shrink-0 text-muted-foreground transition-colors duration-150 group-hover:text-foreground"
+                      aria-hidden
+                    />
+                    <span className="sr-only">{t("askRoom")}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </DetailSection>
+
+          <DetailSection id="amenities" title={t("amenitiesTitle")} className="mt-12">
             <ul className="flex flex-wrap gap-2">
               {hotel.amenities.map((amenity) => {
                 const Icon = AMENITY_ICONS[amenity];
@@ -181,55 +208,27 @@ export default async function HotelPage({ params }: HotelPageProps) {
             </ul>
           </DetailSection>
 
-          <DetailSection id="rooms" title={t("roomsTitle")}>
-            <ul className="divide-y rounded-2xl border">
-              {hotel.rooms.map((room) => (
-                <li
-                  key={room.name}
-                  className="flex items-baseline justify-between gap-4 p-4"
-                >
-                  <span className="min-w-0">
-                    <span className="block font-medium">{room.name}</span>
-                    <span className="block text-sm text-muted-foreground">
-                      {t("guests", { count: room.guests })}
-                    </span>
-                  </span>
-                  <PriceLine
-                    main={t("roomPrice", { som: formatSom(room.price, locale) })}
-                    note={tHotels("perNight")}
-                    className="shrink-0 text-right"
-                  />
-                </li>
-              ))}
-            </ul>
-          </DetailSection>
-
-          <DetailSection id="hours" title={tHours("title")}>
+          <DetailSection id="hours" title={tHours("title")} className="mt-12">
             <DetailCard>
               <FactGrid facts={facts} />
-              <CrowdChart
-                visitors={hotel.crowd_by_month}
-                openMonths={hotel.months}
-              />
+              <CrowdChart visitors={hotel.crowd_by_month} openMonths={hotel.months} />
             </DetailCard>
           </DetailSection>
 
-          <DetailSection id="address" title={t("addressTitle")}>
-            <p>{hotel.address}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t("contactHint")}</p>
-          </DetailSection>
+          <section aria-label={t("addressTitle")} className="mt-12 lg:hidden">
+            <AddressLine address={hotel.address} mapHref={mapHref} />
+            <p className="mt-3 text-sm text-pretty text-muted-foreground">{t("contactHint")}</p>
+          </section>
         </div>
 
-        <DetailAside>
-          {summary}
-          <div className="mt-6 grid gap-2">
-            <ContactActions
-              whatsappHref={whatsappHref}
-              phone={hotel.phone}
-              stacked
-            />
-          </div>
-        </DetailAside>
+        <ContactCard
+          summary={summary}
+          whatsappHref={whatsappHref}
+          phone={hotel.phone}
+          hint={t("contactHint")}
+          address={hotel.address}
+          mapHref={mapHref}
+        />
       </div>
 
       <Suspense>

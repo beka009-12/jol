@@ -18,7 +18,9 @@
     "nearby": "Nearby: {place}",
     "offlineTitle": "You're offline.",
     "offlineBody": "What's already open stays readable. Search and requests will work again once you're back online.",
-    "offlineRetry": "You're offline. Check your connection, then tap Retry."
+    "offlineRetry": "You're offline. Check your connection, then tap Retry.",
+    "openMap": "Open in maps",
+    "address": "Address"
   },
   "Nav": {
     "home": "Home",
@@ -425,7 +427,9 @@
     "roomPrice": "{som} KGS",
     "addressTitle": "Address",
     "contactHint": "You arrange it directly with the hosts: message them to check dates.",
-    "whatsappMessage": "Hello! I found {name} on Jol. Do you have rooms available?"
+    "whatsappMessage": "Hello! I found {name} on Jol. Do you have rooms available?",
+    "roomMessage": "Hello! I found {name} on Jol. Which dates are free for the {room}?",
+    "askRoom": "Ask on WhatsApp"
   },
   "Restaurants": {
     "metaTitle": "Food",

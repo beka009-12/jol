@@ -1,5 +1,5 @@
-import { DetailSkeleton } from "@/components/skeletons";
+import { CompanyDetailSkeleton } from "@/components/skeletons";
 
 export default function CompanyLoading() {
-  return <DetailSkeleton />;
+  return <CompanyDetailSkeleton />;
 }

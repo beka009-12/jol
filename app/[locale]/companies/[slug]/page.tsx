@@ -9,14 +9,9 @@ import {
 } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { BackLink } from "@/components/back-link";
-import { CompanyMonogram } from "@/components/business-cards";
-import {
-  ContactActions,
-  DetailAside,
-  DetailCard,
-  DetailSection,
-} from "@/components/detail-parts";
-import { type Fact, FactGrid } from "@/components/fact-grid";
+import { CompanyMonogram, KIND_ICONS } from "@/components/business-cards";
+import { ContactActions, ContactCard, DetailSection } from "@/components/detail-parts";
+import type { Fact } from "@/components/fact-grid";
 import { RatingMark, VerifiedMark } from "@/components/rating";
 import { TourGridSkeleton } from "@/components/skeletons";
 import { StickyCta } from "@/components/sticky-cta";
@@ -52,13 +47,14 @@ async function CompanyTours({ locale, slug }: CompanyToursProps) {
   if (tours.items.length === 0) return null;
 
   return (
-    <DetailSection id="company-tours" title={t("toursTitle")}>
-      <ul className="grid gap-x-6 gap-y-8 sm:grid-cols-2">
+    <DetailSection id="company-tours" title={t("toursTitle")} className="mt-12">
+      <ul className="grid gap-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-8 xl:grid-cols-3">
         {tours.items.map((tour) => (
           <li key={tour.slug}>
             <TourCard
               tour={tour}
-              sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
+              sizes="(min-width: 1280px) 240px, (min-width: 640px) 50vw, 112px"
+              compactOnPhone
             />
           </li>
         ))}
@@ -108,52 +104,67 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
     },
   ];
 
-  return (
-    <article className="pb-12 lg:pb-12">
-      <div className="page-width pt-[calc(env(safe-area-inset-top)+0.75rem)] lg:pt-8">
-        <BackLink href="/companies" className="bg-secondary shadow-none" />
-      </div>
+  const KindIcon = KIND_ICONS[company.kind];
 
-      <div className="page-width mt-4 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-12">
-        <div className="min-w-0">
-          <div className="flex items-start gap-4">
-            <CompanyMonogram name={company.name} large />
+  return (
+    <article className="pb-12">
+      {/* A company has people, not a photo: it gets the dark band and its mark instead. */}
+      <header className="bg-deep text-on-deep [--muted-foreground:var(--on-deep-muted)] [--ring:var(--on-deep)] [--verified:var(--on-deep-verified)]">
+        <div className="page-width pt-[calc(env(safe-area-inset-top)+--spacing(3))] pb-8 lg:pt-8 lg:pb-12">
+          <BackLink href="/companies" />
+          <div className="mt-6 flex items-start gap-4 lg:gap-6">
+            <CompanyMonogram name={company.name} large onDark />
             <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">{tKinds(company.kind)}</p>
-              <h1 className="mt-1 font-display text-display-md font-extrabold text-balance">
+              <p className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                <KindIcon className="size-4" aria-hidden />
+                {tKinds(company.kind)}
+              </p>
+              <h1 className="mt-1 font-display text-display-lg font-extrabold text-balance">
                 {company.name}
               </h1>
-              <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                {company.rating && <RatingMark rating={company.rating} showCount />}
-                {company.verified && <VerifiedMark withLabel />}
-              </p>
+              {(company.rating || company.verified) && (
+                <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  {company.rating && <RatingMark rating={company.rating} showCount />}
+                  {company.verified && <VerifiedMark withLabel />}
+                </p>
+              )}
             </div>
           </div>
+          <p className="mt-6 max-w-[56ch] text-lg text-pretty">{company.tagline}</p>
+          <dl className="mt-8 grid gap-4 border-t border-white/15 pt-6 sm:grid-cols-3 sm:gap-6">
+            {facts.map(({ icon: Icon, term, value }) => (
+              <div key={term} className="min-w-0">
+                <dt className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Icon className="size-4 shrink-0" aria-hidden />
+                  {term}
+                </dt>
+                <dd className="mt-1 font-medium text-pretty first-letter:uppercase">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </header>
 
-          <DetailSection id="about" title={t("aboutTitle")}>
+      <div className="page-width mt-12 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-12">
+        <div className="min-w-0">
+          <DetailSection id="about" title={t("aboutTitle")} className="mt-0">
             <p className="max-w-[65ch] text-pretty">{company.description}</p>
+            <p className="mt-3 text-sm text-pretty text-muted-foreground lg:hidden">
+              {t("contactHint")}
+            </p>
           </DetailSection>
 
-          <DetailCard className="mt-6">
-            <FactGrid facts={facts} />
-          </DetailCard>
-
-          <Suspense fallback={<TourGridSkeleton compactOnPhone={false} />}>
+          <Suspense fallback={<TourGridSkeleton />}>
             <CompanyTours locale={locale} slug={company.slug} />
           </Suspense>
         </div>
 
-        <DetailAside>
-          <p className="font-semibold">{t("contactTitle")}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{t("contactHint")}</p>
-          <div className="mt-6 grid gap-2">
-            <ContactActions
-              whatsappHref={whatsappHref}
-              phone={company.phone}
-              stacked
-            />
-          </div>
-        </DetailAside>
+        <ContactCard
+          summary={<p className="font-semibold">{t("contactTitle")}</p>}
+          whatsappHref={whatsappHref}
+          phone={company.phone}
+          hint={t("contactHint")}
+        />
       </div>
 
       <StickyCta>

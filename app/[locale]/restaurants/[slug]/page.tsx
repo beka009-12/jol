@@ -11,18 +11,19 @@ import { notFound } from "next/navigation";
 import { AvailabilityBadge, OpenNowBadge } from "@/components/availability-badge";
 import { CrowdChart } from "@/components/crowd-chart";
 import {
+  AddressLine,
   ContactActions,
-  DetailAside,
+  ContactCard,
   DetailCard,
   DetailGallery,
   DetailSection,
+  DetailTitle,
+  mapSearchHref,
 } from "@/components/detail-parts";
 import { type Fact, FactGrid } from "@/components/fact-grid";
 import { NearbyListings } from "@/components/nearby-listings";
 import { PriceLine } from "@/components/price";
-import { RatingMark, VerifiedMark } from "@/components/rating";
 import { StickyCta } from "@/components/sticky-cta";
-import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { getRestaurant } from "@/lib/api/server";
 import { formatSeason, formatSom, weekdayName } from "@/lib/format";
@@ -65,6 +66,7 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
   const whatsappHref = `https://wa.me/${restaurant.whatsapp}?text=${encodeURIComponent(
     t("whatsappMessage", { name: restaurant.name }),
   )}`;
+  const mapHref = mapSearchHref(restaurant.name, restaurant.address);
 
   const facts: Fact[] = [
     {
@@ -116,25 +118,14 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
 
       <div className="page-width mt-6 pb-12 lg:mt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-12 lg:pb-12">
         <div className="min-w-0">
-          <p className="text-sm text-muted-foreground">{tTypes(restaurant.type)}</p>
-          <h1 className="mt-1 font-display text-display-md font-extrabold text-balance">
-            {restaurant.name}
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            <Link
-              href={`/places/${restaurant.place.slug}`}
-              className="underline underline-offset-4 transition-colors duration-150 hover:text-foreground"
-            >
-              {restaurant.place.name}
-            </Link>
-            {`, ${restaurant.region.name}`}
-          </p>
-          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-            {restaurant.rating && <RatingMark rating={restaurant.rating} showCount />}
-            {restaurant.verified && <VerifiedMark withLabel />}
-          </p>
-
-          <div className="mt-4 lg:hidden">{summary}</div>
+          <DetailTitle
+            kind={tTypes(restaurant.type)}
+            title={restaurant.name}
+            place={restaurant.place}
+            region={restaurant.region}
+            rating={restaurant.rating}
+            verified={restaurant.verified}
+          />
 
           <ul className="mt-4 flex flex-wrap gap-2">
             {restaurant.cuisines.map((cuisine) => (
@@ -147,49 +138,44 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
             ))}
           </ul>
 
-          <DetailSection id="about" title={t("aboutTitle")}>
+          <div className="mt-4 lg:hidden">{summary}</div>
+
+          <DetailSection id="about" title={t("aboutTitle")} className="mt-12">
             <p className="max-w-[65ch] text-pretty">{restaurant.description}</p>
           </DetailSection>
 
-          <DetailSection id="dishes" title={t("dishesTitle")}>
-            <ul className="flex flex-wrap gap-2">
+          {/* A short menu card: the dishes are the reason to come, so they get room. */}
+          <DetailSection id="dishes" title={t("dishesTitle")} className="mt-12">
+            <ul className="grid gap-x-6 border-t sm:grid-cols-2">
               {restaurant.dishes.map((dish) => (
-                <li
-                  key={dish}
-                  className="inline-flex h-9 items-center rounded-xl border px-3 text-sm"
-                >
+                <li key={dish} className="border-b py-3 font-medium">
                   {dish}
                 </li>
               ))}
             </ul>
           </DetailSection>
 
-          <DetailSection id="hours" title={tHours("title")}>
+          <DetailSection id="hours" title={tHours("title")} className="mt-12">
             <DetailCard>
               <FactGrid facts={facts} />
-              <CrowdChart
-                visitors={restaurant.crowd_by_month}
-                openMonths={restaurant.months}
-              />
+              <CrowdChart visitors={restaurant.crowd_by_month} openMonths={restaurant.months} />
             </DetailCard>
           </DetailSection>
 
-          <DetailSection id="address" title={t("addressTitle")}>
-            <p>{restaurant.address}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t("contactHint")}</p>
-          </DetailSection>
+          <section aria-label={t("addressTitle")} className="mt-12 lg:hidden">
+            <AddressLine address={restaurant.address} mapHref={mapHref} />
+            <p className="mt-3 text-sm text-pretty text-muted-foreground">{t("contactHint")}</p>
+          </section>
         </div>
 
-        <DetailAside>
-          {summary}
-          <div className="mt-6 grid gap-2">
-            <ContactActions
-              whatsappHref={whatsappHref}
-              phone={restaurant.phone}
-              stacked
-            />
-          </div>
-        </DetailAside>
+        <ContactCard
+          summary={summary}
+          whatsappHref={whatsappHref}
+          phone={restaurant.phone}
+          hint={t("contactHint")}
+          address={restaurant.address}
+          mapHref={mapHref}
+        />
       </div>
 
       <Suspense>

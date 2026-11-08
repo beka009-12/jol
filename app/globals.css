@@ -43,6 +43,8 @@
   --deep-raised: #183b36;
   --on-deep: #ffffff;
   --on-deep-muted: #b7c7c2;
+  /* The verified mark on the dark band, where --verified is too dark to read. */
+  --on-deep-verified: #6fd3c2;
 
   /* The flag's sun: ratings, and the selected thing on a dark band. */
   --sun: #f5b81f;

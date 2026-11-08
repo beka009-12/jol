@@ -141,6 +141,40 @@ export function PlaceDetailSkeleton() {
   );
 }
 
+/* The dark band with the mark and facts, then the text and contact card. */
+export function CompanyDetailSkeleton() {
+  return (
+    <div>
+      <div className="bg-deep">
+        <div className="page-width pt-[calc(env(safe-area-inset-top)+--spacing(3))] pb-8 lg:pt-8 lg:pb-12">
+          <Skeleton className="size-11 rounded-full bg-white/10" />
+          <div className="mt-6 flex items-start gap-4 lg:gap-6">
+            <Skeleton className="size-20 shrink-0 rounded-2xl bg-white/10" />
+            <div className="flex-1">
+              <Skeleton className="h-4 w-24 bg-white/10" />
+              <Skeleton className="mt-2 h-12 w-3/5 bg-white/10" />
+            </div>
+          </div>
+          <Skeleton className="mt-6 h-6 w-4/5 max-w-[36rem] bg-white/10" />
+          <div className="mt-8 grid gap-4 border-t border-white/15 pt-6 sm:grid-cols-3 sm:gap-6">
+            {[0, 1, 2].map((key) => (
+              <Skeleton key={key} className="h-11 w-full bg-white/10" />
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="page-width mt-12 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
+        <div>
+          <Skeleton className="h-6 w-2/5" />
+          <Skeleton className="mt-3 h-5 w-full" />
+          <Skeleton className="mt-2 h-5 w-4/5" />
+        </div>
+        <Skeleton className="hidden h-48 w-full rounded-2xl lg:block" />
+      </div>
+    </div>
+  );
+}
+
 export function DetailSkeleton() {
   return (
     <div className="lg:page-width lg:pt-6">

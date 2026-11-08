@@ -114,17 +114,20 @@ export function initials(name: string): string {
 interface CompanyMonogramProps {
   name: string;
   large?: boolean;
+  /** Light mark for the dark band at the top of a company page. */
+  onDark?: boolean;
 }
 
-export function CompanyMonogram({ name, large = false }: CompanyMonogramProps) {
+/* Classes joined by hand: tailwind-merge takes text-display-sm and a text colour for one group. */
+export function CompanyMonogram({ name, large = false, onDark = false }: CompanyMonogramProps) {
   return (
     <span
       aria-hidden
-      className={
-        large
-          ? "grid size-20 shrink-0 place-items-center rounded-2xl bg-deep font-display text-display-sm font-extrabold text-on-deep"
-          : "grid size-14 shrink-0 place-items-center rounded-xl bg-deep font-display text-xl font-extrabold text-on-deep"
-      }
+      className={[
+        "grid shrink-0 place-items-center font-display font-extrabold",
+        large ? "size-20 rounded-2xl text-display-sm" : "size-14 rounded-xl text-xl",
+        onDark ? "bg-on-deep text-deep" : "bg-deep text-on-deep",
+      ].join(" ")}
     >
       {initials(name)}
     </span>
@@ -186,7 +189,7 @@ export function CompanyCard({
   );
 }
 
-const KIND_ICONS: Record<CompanyKind, LucideIcon> = {
+export const KIND_ICONS: Record<CompanyKind, LucideIcon> = {
   tour_operator: Compass,
   transfer: CarFront,
   guide: UserRound,

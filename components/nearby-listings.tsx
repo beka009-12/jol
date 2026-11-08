@@ -5,8 +5,8 @@ import { settle } from "@/lib/api/errors";
 import { getHotels, getRestaurants, getTours } from "@/lib/api/server";
 import type { Locale } from "@/lib/types";
 
-const GRID = "grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4";
-const SIZES = "(min-width: 1024px) 300px, (min-width: 640px) 50vw, 100vw";
+const GRID = "grid gap-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-4";
+const SIZES = "(min-width: 1024px) 300px, (min-width: 640px) 50vw, 112px";
 
 interface NearbyListingsProps {
   locale: Locale;
@@ -51,7 +51,7 @@ export async function NearbyListings({
             <ul className={GRID}>
               {nearbyTours.slice(0, 4).map((tour) => (
                 <li key={tour.slug}>
-                  <TourCard tour={tour} sizes={SIZES} />
+                  <TourCard tour={tour} sizes={SIZES} compactOnPhone />
                 </li>
               ))}
             </ul>
@@ -64,7 +64,7 @@ export async function NearbyListings({
             <ul className={GRID}>
               {nearbyHotels.slice(0, 4).map((hotel) => (
                 <li key={hotel.slug}>
-                  <HotelCard hotel={hotel} sizes={SIZES} />
+                  <HotelCard hotel={hotel} sizes={SIZES} compactOnPhone />
                 </li>
               ))}
             </ul>
@@ -77,7 +77,7 @@ export async function NearbyListings({
             <ul className={GRID}>
               {nearbyFood.slice(0, 4).map((restaurant) => (
                 <li key={restaurant.slug}>
-                  <RestaurantCard restaurant={restaurant} sizes={SIZES} />
+                  <RestaurantCard restaurant={restaurant} sizes={SIZES} compactOnPhone />
                 </li>
               ))}
             </ul>

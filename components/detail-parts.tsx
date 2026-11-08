@@ -1,11 +1,13 @@
 import type { ReactNode } from "react";
-import { MessageCircle, Phone } from "lucide-react";
+import { Map as MapIcon, MessageCircle, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "cn";
 import { BackLink } from "@/components/back-link";
 import { Photo } from "@/components/photo";
+import { RatingMark, VerifiedMark } from "@/components/rating";
 import { buttonVariants } from "@/components/ui/button";
-import type { Photo as PhotoData } from "@/lib/types";
+import { Link } from "@/i18n/navigation";
+import type { PlaceRef, Photo as PhotoData, Rating, Region } from "@/lib/types";
 
 interface DetailGalleryProps {
   photos: PhotoData[];
@@ -87,9 +89,67 @@ interface DetailAsideProps {
 
 export function DetailAside({ children }: DetailAsideProps) {
   return (
-    <aside className="sticky top-[calc(var(--header-height)+1.5rem)] hidden rounded-2xl border bg-card p-6 lg:block">
+    <aside className="sticky top-[calc(var(--header-height)+--spacing(6))] hidden rounded-2xl border bg-card p-6 lg:block">
       {children}
     </aside>
+  );
+}
+
+/* A search link: hotels and cafes come with an address, not coordinates. */
+export function mapSearchHref(name: string, address: string): string {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name}, ${address}`)}`;
+}
+
+interface ContactCardProps {
+  /** Price and open state, above the buttons. */
+  summary?: ReactNode;
+  whatsappHref: string;
+  phone: string;
+  /** Who you deal with and what to ask them. */
+  hint: string;
+  address?: string;
+  mapHref?: string;
+}
+
+/* The side card on a large screen: what it costs, how to reach them, where it is. */
+export function ContactCard({ summary, whatsappHref, phone, hint, address, mapHref }: ContactCardProps) {
+  return (
+    <DetailAside>
+      {summary}
+      <div className={cn("grid gap-2", summary && "mt-6")}>
+        <ContactActions whatsappHref={whatsappHref} phone={phone} stacked />
+      </div>
+      <p className="mt-3 text-xs text-pretty text-muted-foreground">{hint}</p>
+      {address && <AddressLine address={address} mapHref={mapHref} className="mt-4 border-t pt-4" />}
+    </DetailAside>
+  );
+}
+
+interface AddressLineProps {
+  address: string;
+  mapHref?: string;
+  className?: string;
+}
+
+export function AddressLine({ address, mapHref, className }: AddressLineProps) {
+  const t = useTranslations("Common");
+
+  return (
+    <div className={className}>
+      <p className="text-sm text-muted-foreground">{t("address")}</p>
+      <p className="mt-1 text-pretty">{address}</p>
+      {mapHref && (
+        <a
+          href={mapHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="-my-2 inline-flex min-h-11 items-center gap-2 text-sm font-medium underline decoration-foreground/30 underline-offset-4 transition-colors duration-150 hover:decoration-foreground"
+        >
+          <MapIcon className="size-4" aria-hidden />
+          {t("openMap")}
+        </a>
+      )}
+    </div>
   );
 }
 
@@ -117,5 +177,40 @@ export function DetailSection({ id, title, className, children }: DetailSectionP
       </h2>
       {children}
     </section>
+  );
+}
+
+interface DetailTitleProps {
+  /** What it is: "Guesthouse", "Teahouse". */
+  kind: string;
+  title: string;
+  place: PlaceRef;
+  region: Region;
+  rating?: Rating | null;
+  verified?: boolean;
+}
+
+/* The same head on every listing page, so a hotel, a cafe and a tour read alike. */
+export function DetailTitle({ kind, title, place, region, rating, verified }: DetailTitleProps) {
+  return (
+    <>
+      <p className="text-sm text-muted-foreground">{kind}</p>
+      <h1 className="mt-1 font-display text-display-lg font-extrabold text-balance">{title}</h1>
+      <p className="mt-1 text-muted-foreground">
+        <Link
+          href={`/places/${place.slug}`}
+          className="underline decoration-foreground/30 underline-offset-4 transition-colors duration-150 hover:text-foreground hover:decoration-foreground"
+        >
+          {place.name}
+        </Link>
+        {`, ${region.name}`}
+      </p>
+      {(rating || verified) && (
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+          {rating && <RatingMark rating={rating} showCount />}
+          {verified && <VerifiedMark withLabel />}
+        </p>
+      )}
+    </>
   );
 }
