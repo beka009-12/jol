@@ -42,7 +42,7 @@ export function SiteHeader() {
                     href={href}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "relative inline-flex h-[var(--header-height)] items-center px-3 font-medium transition-colors duration-150 hover:text-primary",
+                      "relative inline-flex h-[var(--header-height)] items-center rounded-xl px-3 font-medium transition-colors duration-150 hover:text-primary focus-visible:-outline-offset-8",
                       active &&
                         "text-primary after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:bg-primary",
                     )}

@@ -4,7 +4,7 @@ import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { CategoryIcon, CATEGORIES } from "@/components/category-icon";
-import { CatalogPage } from "@/components/catalog-tabs";
+import { CatalogFilters, CatalogPage } from "@/components/catalog-tabs";
 import { ChipRow } from "@/components/chip";
 import { EmptyState } from "@/components/empty-state";
 import { TourGridSkeleton } from "@/components/skeletons";
@@ -57,8 +57,9 @@ async function TourFilters({ locale, category, month }: FiltersProps) {
   const tCategories = await getTranslations("Categories");
 
   return (
-    <div className="space-y-2">
+    <CatalogFilters>
       <ChipRow
+        showLabel
         label={t("categoryLabel")}
         items={[
           {
@@ -77,6 +78,7 @@ async function TourFilters({ locale, category, month }: FiltersProps) {
         ]}
       />
       <ChipRow
+        showLabel
         label={t("monthLabel")}
         items={[
           {
@@ -94,7 +96,7 @@ async function TourFilters({ locale, category, month }: FiltersProps) {
           })),
         ]}
       />
-    </div>
+    </CatalogFilters>
   );
 }
 
@@ -111,10 +113,15 @@ async function TourResults({ locale, category, month }: FiltersProps) {
         <p role="status" className="mb-4 text-sm text-muted-foreground">
           {t("count", { count: total })}
         </p>
-        <ul className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <ul className="grid gap-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4">
           {items.map((tour, index) => (
             <li key={tour.slug}>
-              <TourCard tour={tour} headingLevel="h2" preload={index === 0} />
+              <TourCard
+                tour={tour}
+                headingLevel="h2"
+                preload={index === 0}
+                compactOnPhone
+              />
             </li>
           ))}
         </ul>
@@ -174,7 +181,7 @@ export default async function ToursPage({
   const month = parseMonth(raw.month);
 
   return (
-    <CatalogPage active="tours" title={t("title")}>
+    <CatalogPage active="tours" title={t("title")} lede={t("lede")}>
       <TourFilters locale={locale} category={category} month={month} />
       <div className="mt-6">
         <Suspense

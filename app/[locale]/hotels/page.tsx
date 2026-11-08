@@ -4,7 +4,7 @@ import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { HotelCard } from "@/components/business-cards";
-import { CatalogPage } from "@/components/catalog-tabs";
+import { CatalogFilters, CatalogPage } from "@/components/catalog-tabs";
 import { ChipRow } from "@/components/chip";
 import { EmptyState } from "@/components/empty-state";
 import { TourGridSkeleton } from "@/components/skeletons";
@@ -60,10 +60,15 @@ async function HotelResults({ locale, type, region }: ResultsProps) {
       <p role="status" className="mb-4 text-sm text-muted-foreground">
         {t("count", { count: total })}
       </p>
-      <ul className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <ul className="grid gap-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4">
         {items.map((hotel, index) => (
           <li key={hotel.slug}>
-            <HotelCard hotel={hotel} headingLevel="h2" preload={index === 0} />
+            <HotelCard
+              hotel={hotel}
+              headingLevel="h2"
+              preload={index === 0}
+              compactOnPhone
+            />
           </li>
         ))}
       </ul>
@@ -88,9 +93,10 @@ export default async function HotelsPage({
   const region = parseSlug(raw.region);
 
   return (
-    <CatalogPage active="hotels" title={t("title")}>
-      <div className="space-y-2">
+    <CatalogPage active="hotels" title={t("title")} lede={t("lede")}>
+      <CatalogFilters>
         <ChipRow
+          showLabel
           label={t("typeLabel")}
           items={[
             {
@@ -108,6 +114,7 @@ export default async function HotelsPage({
           ]}
         />
         <ChipRow
+          showLabel
           label={t("regionLabel")}
           items={[
             {
@@ -124,7 +131,7 @@ export default async function HotelsPage({
             })),
           ]}
         />
-      </div>
+      </CatalogFilters>
       <div className="mt-6">
         <Suspense
           key={`${type ?? ""}-${region ?? ""}`}

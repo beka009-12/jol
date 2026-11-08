@@ -157,7 +157,8 @@
     "emptySuggestion": "See {month}",
     "empty": "No tours match these filters.",
     "emptyClear": "Clear filters",
-    "days": "{count, plural, one {# day} other {# days}}"
+    "days": "{count, plural, one {# day} other {# days}}",
+    "lede": "Horse, ski, yurt and hiking tours, each with its price and when it runs."
   },
   "Tour": {
     "seasonsTitle": "When it runs",
@@ -222,7 +223,10 @@
     "allRegions": "All regions",
     "openTours": "{count, plural, one {# open tour} other {# open tours}}",
     "empty": "No places in this region yet.",
-    "emptyClear": "Show all regions"
+    "emptyClear": "Show all regions",
+    "lede": "Lakes, gorges and old towns, each with the best time to go.",
+    "season": "Best time: {months}",
+    "inSeasonNow": "In season now"
   },
   "Place": {
     "bestTime": "Best time to visit",
@@ -239,7 +243,10 @@
     "bestMonths": "Best months",
     "rightNow": "Right now",
     "inSeason": "In season",
-    "seasonStarts": "Off season, starts in {month}"
+    "seasonStarts": "Off season, starts in {month}",
+    "glanceLabel": "Trip at a glance",
+    "locatorLabel": "{place} on a map of Kyrgyzstan",
+    "capital": "Bishkek"
   },
   "Guide": {
     "metaTitle": "AI guide",
@@ -377,7 +384,8 @@
     "empty": "No stays match these filters.",
     "emptyClear": "Clear filters",
     "priceFrom": "from {som} KGS",
-    "perNight": "per night"
+    "perNight": "per night",
+    "lede": "Guesthouses, yurt camps and hotels, each with its nightly price and season."
   },
   "HotelTypes": {
     "hotel": "Hotel",
@@ -420,7 +428,8 @@
     "empty": "No places to eat match these filters.",
     "emptyClear": "Clear filters",
     "checkValue": "~{som} KGS",
-    "checkNote": "typical bill"
+    "checkNote": "typical bill",
+    "lede": "Plov, lagman, ashlan-fu and coffee on the road, each with its typical bill."
   },
   "RestaurantTypes": {
     "restaurant": "Restaurant",
@@ -455,7 +464,8 @@
     "count": "{count, plural, one {# company} other {# companies}}",
     "empty": "No companies match these filters.",
     "emptyClear": "Clear filters",
-    "toursCount": "{count, plural, one {# tour} other {# tours}}"
+    "toursCount": "{count, plural, one {# tour} other {# tours}}",
+    "lede": "Tour companies, drivers and guides you can arrange with directly."
   },
   "CompanyKinds": {
     "tour_operator": "Tour company",

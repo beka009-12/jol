@@ -29,7 +29,7 @@ const PAD = 8;
   sees at full width; the faint oblast lines and roads can be coarser, which
   keeps the page light on a mountain connection.
 */
-const TOLERANCE = { border: 0.45, oblast: 1.4, road: 0.9, route: 0.6 };
+const TOLERANCE = { border: 0.45, oblast: 1.4, road: 0.9, route: 0.6, locator: 3 };
 
 /* Each route is the shortest road path through these points, in order: [lng, lat]. */
 const ROUTE_WAYPOINTS = {
@@ -174,16 +174,24 @@ const OBLAST_PATH = oblasts
 
 const LAKE_NAMES = { "Issyk-Kul": "issykKul", "Toktogul Suu Saktagychy": "toktogul" };
 const lakes = {};
+const lakePolygons = {};
 for (const feature of load("ne_10m_lakes").features) {
   const key = LAKE_NAMES[feature.properties.name];
   if (!key) continue;
-  lakes[key] = polygonsOf(feature.geometry)
-    .map((polygon) => polygon.map(ringPath).join(""))
+  lakePolygons[key] = polygonsOf(feature.geometry);
+  lakes[key] = lakePolygons[key]
+    .map((polygon) => polygon.map((ring) => ringPath(ring)).join(""))
     .join("");
 }
 for (const key of Object.values(LAKE_NAMES)) {
   if (!lakes[key]) throw new Error(`Lake ${key} not found`);
 }
+
+/* A coarse outline for the small "where is it" map on a place page. */
+const LOCATOR_BORDER = ringPath(rings[0], TOLERANCE.locator);
+const LOCATOR_LAKE = lakePolygons.issykKul
+  .map((polygon) => ringPath(polygon[0], TOLERANCE.locator))
+  .join("");
 
 /* ---- Roads ---- */
 
@@ -350,6 +358,12 @@ export const ROUTE_PATHS = {
   lake: "${ROUTE_PATHS.lake}",
   center: "${ROUTE_PATHS.center}",
   south: "${ROUTE_PATHS.south}",
+} as const;
+
+/** Coarse border and Issyk-Kul for small locator maps, same projection. */
+export const LOCATOR_PATHS = {
+  border: "${LOCATOR_BORDER}",
+  lake: "${LOCATOR_LAKE}",
 } as const;
 `;
 
