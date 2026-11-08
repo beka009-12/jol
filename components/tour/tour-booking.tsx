@@ -10,7 +10,8 @@ import {
   useState,
 } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { cn } from "cn";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { formatShortDate, formatSom } from "@/lib/format";
 import type { Departure, TourOperator } from "@/lib/types";
 
@@ -82,43 +83,55 @@ function useTourBooking(): TourBookingValue {
 }
 
 interface RequestButtonProps {
+  /** Says what the tap leads to: "Request a place", or "Request a June date" out of season. */
+  label: string;
+  variant?: ButtonProps["variant"];
   className?: string;
 }
 
-export function RequestButton({ className }: RequestButtonProps) {
-  const t = useTranslations("Tour");
+export function RequestButton({ label, variant, className }: RequestButtonProps) {
   const { openRequest } = useTourBooking();
 
   return (
-    <Button size="lg" className={className} onClick={() => openRequest()}>
-      {t("requestCta")}
+    <Button size="lg" variant={variant} className={className} onClick={() => openRequest()}>
+      {label}
     </Button>
   );
 }
+
+/* At or below this, the seat count is worth a second look. */
+const FEW_SEATS = 3;
 
 interface DepartureButtonProps {
   departure: Departure;
 }
 
+/* One date: tapping it opens the request with that date already chosen. */
 export function DepartureButton({ departure }: DepartureButtonProps) {
   const t = useTranslations("Tour");
   const tPrice = useTranslations("Price");
   const locale = useLocale();
   const { openRequest } = useTourBooking();
   const soldOut = departure.seats_left <= 0;
+  const fewSeats = !soldOut && departure.seats_left <= FEW_SEATS;
 
   return (
     <button
       type="button"
       disabled={soldOut}
       onClick={() => openRequest(departure.date)}
-      className="flex min-h-14 w-full items-center justify-between gap-3 rounded-xl bg-secondary px-4 py-2 text-left transition-colors duration-150 hover:bg-accent active:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+      className="flex min-h-16 w-full items-center justify-between gap-3 rounded-xl border bg-card px-4 py-2 text-left transition-colors duration-150 hover:border-foreground/40 active:bg-secondary disabled:cursor-not-allowed disabled:border-transparent disabled:bg-muted disabled:text-muted-foreground"
     >
       <span>
         <span className="block font-semibold first-letter:uppercase">
           {formatShortDate(departure.date, locale)}
         </span>
-        <span className="block text-xs text-muted-foreground">
+        <span
+          className={cn(
+            "block text-xs",
+            fewSeats ? "font-medium text-soon" : "text-muted-foreground",
+          )}
+        >
           {soldOut
             ? t("noSeats")
             : t("seatsLeft", { count: departure.seats_left })}

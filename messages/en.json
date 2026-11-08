@@ -181,7 +181,14 @@
     "closedNote": "The season is closed. It comes back {date}.",
     "photoGallery": "More photos",
     "place": "Where",
-    "nextDeparture": "Next departure"
+    "nextDeparture": "Next departure",
+    "requestForMonth": "Request a {month} date",
+    "firstDeparturesTitle": "First departures of the season",
+    "plannedNote": "The season starts {date}. You can request a place now, with nothing to pay in advance.",
+    "allDates": "See all dates",
+    "operatorLine": "Operator",
+    "askAboutMonth": "Ask about {month}",
+    "whatsappMonthMessage": "Hello! I’d like to join “{title}” in {monthIn}. When will the dates be out?"
   },
   "Request": {
     "title": "Request a place",
@@ -213,7 +220,11 @@
     "successBody": "{operator} will contact you at {phone}. {date}, {people}.",
     "people": "{count, plural, one {# person} other {# people}}",
     "successRequests": "View my requests",
-    "successDone": "Done"
+    "successDone": "Done",
+    "monthLabel": "Month",
+    "peopleLabel": "Who’s going",
+    "contactLabel": "How to reach you",
+    "noteToggle": "Add a note"
   },
   "Places": {
     "metaTitle": "Places",

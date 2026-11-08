@@ -181,7 +181,14 @@
     "closedNote": "Сезон закрыт. Тур вернётся {date}.",
     "photoGallery": "Ещё фото",
     "place": "Где",
-    "nextDeparture": "Ближайший заезд"
+    "nextDeparture": "Ближайший заезд",
+    "requestForMonth": "Заявка на {month}",
+    "firstDeparturesTitle": "Первые заезды сезона",
+    "plannedNote": "Сезон начнётся {date}. Заявку можно оставить уже сейчас, платить заранее не нужно.",
+    "allDates": "Все даты",
+    "operatorLine": "Оператор",
+    "askAboutMonth": "Спросить про {month}",
+    "whatsappMonthMessage": "Здравствуйте! Хочу поехать на «{title}» в {monthIn}. Когда появятся даты?"
   },
   "Request": {
     "title": "Оставить заявку",
@@ -213,7 +220,11 @@
     "successBody": "{operator} свяжется с вами по номеру {phone}. {date}, {people}.",
     "people": "{count, plural, one {# человек} few {# человека} other {# человек}}",
     "successRequests": "Мои заявки",
-    "successDone": "Готово"
+    "successDone": "Готово",
+    "monthLabel": "Месяц",
+    "peopleLabel": "Кто едет",
+    "contactLabel": "Как с вами связаться",
+    "noteToggle": "Добавить комментарий"
   },
   "Places": {
     "metaTitle": "Места",

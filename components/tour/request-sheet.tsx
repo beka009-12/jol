@@ -7,7 +7,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { CircleCheck } from "lucide-react";
+import { CircleCheck, Plus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "cn";
 import { useAuth } from "@/components/auth-provider";
@@ -27,16 +27,18 @@ import {
 } from "@/lib/api/client";
 import {
   formatDate,
-  formatShortDate,
   formatSom,
   formatUsd,
+  monthName,
   todayInBishkek,
 } from "@/lib/format";
-import type { Locale, TourRequestInput } from "@/lib/types";
+import type { Departure, Locale, TourRequestInput } from "@/lib/types";
 import type { BookableTour } from "./tour-booking";
 
 const BOOKING_WINDOW_DAYS = 240;
 const MIN_PHONE_DIGITS = 7;
+/* At or below this, the seat count is worth a second look. */
+const FEW_SEATS = 3;
 
 function addDays(iso: string, days: number): string {
   const date = new Date(`${iso}T00:00:00Z`);
@@ -64,6 +66,7 @@ export function RequestSheet({
   onOpenChange,
 }: RequestSheetProps) {
   const t = useTranslations("Request");
+  const tTour = useTranslations("Tour");
   const tPrice = useTranslations("Price");
   const locale = useLocale() as Locale;
   const queryClient = useQueryClient();
@@ -74,6 +77,7 @@ export function RequestSheet({
   const phoneRef = useRef<HTMLInputElement>(null);
 
   const [pickedDate, setPickedDate] = useState(initialDate);
+  const [pickedMonth, setPickedMonth] = useState<string | undefined>();
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [name, setName] = useState(user?.name ?? "");
@@ -98,6 +102,19 @@ export function RequestSheet({
   const firstOpen = options.find((option) => option.seats_left > 0);
   const date = pickedDate ?? firstOpen?.date;
   const selected = options.find((option) => option.date === date);
+
+  // Dates grouped by month ("2027-06"), so a June trip is two taps away, not a long swipe.
+  const byMonth = new Map<string, Departure[]>();
+  for (const option of options) {
+    const key = option.date.slice(0, 7);
+    byMonth.set(key, [...(byMonth.get(key) ?? []), option]);
+  }
+  const monthKeys = [...byMonth.keys()];
+  const activeMonth =
+    pickedMonth && byMonth.has(pickedMonth)
+      ? pickedMonth
+      : (date?.slice(0, 7) ?? monthKeys[0]);
+  const visibleDates = (activeMonth && byMonth.get(activeMonth)) || [];
   const seatLimit = Math.min(
     tour.groupMax,
     selected?.seats_left ?? tour.groupMax,
@@ -151,8 +168,9 @@ export function RequestSheet({
     submission.mutate(buildInput());
   };
 
+  const people = adults + children;
+
   if (submission.isSuccess) {
-    const people = adults + children;
     return (
       <BottomSheet
         open={open}
@@ -189,85 +207,181 @@ export function RequestSheet({
     );
   }
 
+  const footer =
+    needsSignIn && !isSignedIn ? (
+      <div>
+        <p className="mb-3 text-sm">{t("signInHint")}</p>
+        <SignInPanel onSignedIn={() => submission.mutate(buildInput())} />
+      </div>
+    ) : (
+      <>
+        {submission.isError && (
+          <p role="alert" className="mb-3 text-sm text-destructive">
+            {t("submitError")}
+          </p>
+        )}
+        <div className="flex items-center gap-4">
+          <div aria-live="polite" className="min-w-0 flex-1">
+            {quote.isError ? (
+              <p className="text-xs text-muted-foreground">{t("quoteError")}</p>
+            ) : (
+              <>
+                <span className="sr-only">{t("totalLabel")}</span>
+                {quote.data ? (
+                  <>
+                    <p className="text-lg leading-tight font-bold whitespace-nowrap">
+                      {tPrice("som", { som: formatSom(quote.data.total, locale) })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {tPrice("approxUsd", { usd: formatUsd(quote.data.total, locale) })},{" "}
+                      {t("people", { count: people })}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Skeleton className="h-6 w-28" />
+                    <Skeleton className="mt-1 h-4 w-20" />
+                  </>
+                )}
+              </>
+            )}
+          </div>
+          <Button
+            type="submit"
+            form={formId}
+            size="lg"
+            className="shrink-0"
+            disabled={options.length === 0}
+            loading={submission.isPending}
+          >
+            {submission.isPending ? t("submitting") : t("submit")}
+          </Button>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">{t("description")}</p>
+      </>
+    );
+
   return (
     <BottomSheet
       open={open}
       onOpenChange={onOpenChange}
       title={t("title")}
       description={tour.title}
+      footer={footer}
     >
-      <form id={formId} onSubmit={handleSubmit} noValidate className="space-y-6">
-        <p className="text-sm text-muted-foreground">{t("description")}</p>
-
-        <fieldset>
-          <legend className="mb-2 text-sm font-medium">{t("dateLabel")}</legend>
+      <form id={formId} onSubmit={handleSubmit} noValidate className="space-y-8">
+        {/* min-w-0: a fieldset is as wide as its widest row by default, and the month row scrolls. */}
+        <fieldset className="min-w-0">
+          <legend className="mb-3 font-semibold">{t("dateLabel")}</legend>
           {departures.isError && !options.length ? (
             <p role="alert" className="text-sm text-destructive">
               {t("datesError")}
             </p>
           ) : departures.isPending ? (
-            <div className="flex gap-2" aria-label={t("datesLoading")}>
-              <Skeleton className="h-16 w-32 shrink-0" />
-              <Skeleton className="h-16 w-32 shrink-0" />
-              <Skeleton className="h-16 w-32 shrink-0" />
+            <div aria-label={t("datesLoading")}>
+              <div className="flex gap-2">
+                <Skeleton className="h-11 w-24 shrink-0 rounded-xl" />
+                <Skeleton className="h-11 w-24 shrink-0 rounded-xl" />
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <Skeleton className="h-16 rounded-xl" />
+                <Skeleton className="h-16 rounded-xl" />
+                <Skeleton className="h-16 rounded-xl" />
+              </div>
             </div>
           ) : options.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("datesEmpty")}</p>
           ) : (
-            <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-              {options.map((option) => {
-                const disabled = option.seats_left <= 0;
-                const checked = option.date === date;
-                return (
-                  <label
-                    key={option.date}
-                    className={cn(
-                      "flex min-h-16 w-32 shrink-0 cursor-pointer flex-col justify-center rounded-xl px-3 py-2 transition-colors duration-150 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring",
-                      checked
-                        ? "bg-foreground text-background"
-                        : "bg-secondary hover:bg-accent",
-                      disabled && "cursor-not-allowed opacity-50",
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name="date"
-                      value={option.date}
-                      checked={checked}
-                      disabled={disabled}
-                      onChange={() => {
-                        setPickedDate(option.date);
-                        setAdults((value) =>
-                          Math.min(value, Math.max(1, option.seats_left)),
-                        );
-                        setChildren(0);
-                      }}
-                      className="sr-only"
-                    />
-                    <span className="text-sm font-semibold first-letter:uppercase">
-                      {formatShortDate(option.date, locale)}
-                    </span>
-                    <span
+            <>
+              {monthKeys.length > 1 && (
+                <div
+                  role="group"
+                  aria-label={t("monthLabel")}
+                  className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4"
+                >
+                  {monthKeys.map((key) => {
+                    const active = key === activeMonth;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => setPickedMonth(key)}
+                        className={cn(
+                          "h-11 shrink-0 rounded-xl border px-4 text-sm font-medium transition-colors duration-150 first-letter:uppercase",
+                          active
+                            ? "border-foreground bg-foreground text-background"
+                            : "border-border bg-card hover:border-foreground/40",
+                        )}
+                      >
+                        {monthName(Number(key.slice(5, 7)), locale)}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <div className={cn("grid grid-cols-3 gap-2", monthKeys.length > 1 && "mt-3")}>
+                {visibleDates.map((option) => {
+                  const disabled = option.seats_left <= 0;
+                  const checked = option.date === date;
+                  const fewSeats = !disabled && option.seats_left <= FEW_SEATS;
+                  return (
+                    <label
+                      key={option.date}
                       className={cn(
-                        "text-xs",
-                        !checked && "text-muted-foreground",
+                        "flex min-h-16 cursor-pointer flex-col justify-center rounded-xl border px-3 py-2 transition-colors duration-150 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring",
+                        checked
+                          ? "border-foreground bg-foreground text-background"
+                          : "border-border bg-card hover:border-foreground/40",
+                        disabled && "cursor-not-allowed border-transparent bg-muted text-muted-foreground hover:border-transparent",
                       )}
                     >
-                      {t("seats", { count: option.seats_left })}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
+                      <input
+                        type="radio"
+                        name="date"
+                        value={option.date}
+                        checked={checked}
+                        disabled={disabled}
+                        onChange={() => {
+                          setPickedDate(option.date);
+                          setAdults((value) =>
+                            Math.min(value, Math.max(1, option.seats_left)),
+                          );
+                          setChildren(0);
+                        }}
+                        className="sr-only"
+                      />
+                      <span className="text-sm font-semibold first-letter:uppercase">
+                        {formatDate(option.date, locale, {
+                          weekday: "short",
+                          day: "numeric",
+                        })}
+                      </span>
+                      <span
+                        className={cn(
+                          "text-xs",
+                          !checked && (fewSeats ? "font-medium text-soon" : "text-muted-foreground"),
+                        )}
+                      >
+                        {disabled
+                          ? tTour("noSeats")
+                          : t("seats", { count: option.seats_left })}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </>
           )}
           {errors.date && (
-            <p role="alert" className="mt-1 text-sm text-destructive">
+            <p role="alert" className="mt-2 text-sm text-destructive">
               {errors.date}
             </p>
           )}
         </fieldset>
 
-        <div className="space-y-3">
+        <fieldset className="min-w-0 space-y-3">
+          <legend className="mb-3 font-semibold">{t("peopleLabel")}</legend>
           <Stepper
             label={t("adults")}
             value={adults}
@@ -287,113 +401,70 @@ export function RequestSheet({
             increaseLabel={t("increase", { label: t("children") })}
             onChange={setChildren}
           />
-        </div>
+        </fieldset>
 
-        <div
-          aria-live="polite"
-          className="flex min-h-14 items-center justify-between gap-3 rounded-xl bg-secondary px-4 py-2"
-        >
-          {quote.isError ? (
-            <p className="text-sm text-muted-foreground">{t("quoteError")}</p>
-          ) : (
-            <>
-              <span className="text-sm text-muted-foreground">
-                {t("totalLabel")}
-              </span>
-              {quote.data ? (
-                <span className="text-right">
-                  <span className="block font-bold">
-                    {tPrice("som", { som: formatSom(quote.data.total, locale) })}
-                  </span>
-                  <span className="block text-xs text-muted-foreground">
-                    {tPrice("approxUsd", {
-                      usd: formatUsd(quote.data.total, locale),
-                    })}
-                  </span>
-                </span>
-              ) : (
-                <Skeleton className="h-6 w-24" />
-              )}
-            </>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor={`${formId}-name`}>{t("nameLabel")}</Label>
-          <Input
-            id={`${formId}-name`}
-            ref={nameRef}
-            value={name}
-            autoComplete="name"
-            aria-invalid={Boolean(errors.name)}
-            aria-describedby={errors.name ? `${formId}-name-error` : undefined}
-            onChange={(event) => setName(event.target.value)}
-          />
-          {errors.name && (
-            <p id={`${formId}-name-error`} className="text-sm text-destructive">
-              {errors.name}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor={`${formId}-phone`}>{t("phoneLabel")}</Label>
-          <Input
-            id={`${formId}-phone`}
-            ref={phoneRef}
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            value={phone}
-            aria-invalid={Boolean(errors.phone)}
-            aria-describedby={`${formId}-phone-hint`}
-            onChange={(event) => setPhone(event.target.value)}
-          />
-          <p
-            id={`${formId}-phone-hint`}
-            className={cn(
-              "text-xs",
-              errors.phone ? "text-destructive" : "text-muted-foreground",
+        <fieldset className="min-w-0 space-y-4">
+          <legend className="mb-3 font-semibold">{t("contactLabel")}</legend>
+          <div className="space-y-2">
+            <Label htmlFor={`${formId}-name`}>{t("nameLabel")}</Label>
+            <Input
+              id={`${formId}-name`}
+              ref={nameRef}
+              value={name}
+              autoComplete="name"
+              aria-invalid={Boolean(errors.name)}
+              aria-describedby={errors.name ? `${formId}-name-error` : undefined}
+              onChange={(event) => setName(event.target.value)}
+            />
+            {errors.name && (
+              <p id={`${formId}-name-error`} className="text-sm text-destructive">
+                {errors.name}
+              </p>
             )}
-          >
-            {errors.phone ?? t("phoneHint")}
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor={`${formId}-note`}>{t("noteLabel")}</Label>
-          <Textarea
-            id={`${formId}-note`}
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-          />
-        </div>
-
-        {submission.isError && (
-          <p role="alert" className="text-sm text-destructive">
-            {t("submitError")}
-          </p>
-        )}
-
-        {needsSignIn && !isSignedIn ? (
-          <div
-            ref={(panel) => panel?.scrollIntoView({ block: "nearest" })}
-            className="rounded-xl bg-secondary p-4"
-          >
-            <p className="mb-3 text-sm">{t("signInHint")}</p>
-            <SignInPanel onSignedIn={() => submission.mutate(buildInput())} />
           </div>
-        ) : (
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full"
-            disabled={options.length === 0}
-            loading={submission.isPending}
-          >
-            {submission.isPending ? t("submitting") : t("submit")}
-          </Button>
-        )}
+
+          <div className="space-y-2">
+            <Label htmlFor={`${formId}-phone`}>{t("phoneLabel")}</Label>
+            <Input
+              id={`${formId}-phone`}
+              ref={phoneRef}
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              value={phone}
+              aria-invalid={Boolean(errors.phone)}
+              aria-describedby={`${formId}-phone-hint`}
+              onChange={(event) => setPhone(event.target.value)}
+            />
+            <p
+              id={`${formId}-phone-hint`}
+              className={cn(
+                "text-xs",
+                errors.phone ? "text-destructive" : "text-muted-foreground",
+              )}
+            >
+              {errors.phone ?? t("phoneHint")}
+            </p>
+          </div>
+
+          <details className="group" open={note.length > 0 || undefined}>
+            <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium [&::-webkit-details-marker]:hidden">
+              <Plus
+                className="size-4 transition-transform duration-150 ease-out group-open:rotate-45"
+                aria-hidden
+              />
+              {t("noteToggle")}
+            </summary>
+            <div className="mt-2 space-y-2">
+              <Label htmlFor={`${formId}-note`}>{t("noteLabel")}</Label>
+              <Textarea
+                id={`${formId}-note`}
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+              />
+            </div>
+          </details>
+        </fieldset>
       </form>
     </BottomSheet>
   );

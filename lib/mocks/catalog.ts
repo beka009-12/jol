@@ -973,7 +973,8 @@ const TOURS: MockTour[] = [
 ];
 
 const OPENS_SOON_WINDOW_DAYS = 45;
-const DEPARTURE_WINDOW_DAYS = 210;
+/* Dates are published this far ahead: the same window the request sheet asks for. */
+const DEPARTURE_WINDOW_DAYS = 240;
 const CHILD_PRICE_SHARE = 0.7;
 const TYIYN_PER_SOM = 100;
 
